@@ -28,17 +28,12 @@ public class EchoServerThread implements Runnable
     DataOutputStream out = null;
     String threadName = Thread.currentThread().getName();
 
-    // To sie dzieje dopiero po połączeniu klienta !!!
-
-//    QuickStart db = new QuickStart();
-//    db.createUser("Ferdek", "Kiepski", "230987651", "400");
-    
     //inicjalizacja strumieni
     try{
       brinp = new BufferedReader(
-        new InputStreamReader(
-          socket.getInputStream()
-        )
+              new InputStreamReader(
+                      socket.getInputStream()
+              )
       );
       out = new DataOutputStream(socket.getOutputStream());
     }
@@ -47,22 +42,35 @@ public class EchoServerThread implements Runnable
       return;
     }
     String line = null;
-    
+
     //pętla główna
     while(true){
       try{
         line = brinp.readLine();
         System.out.println(threadName + "| Odczytano linię: " + line);
-        
+        String[] variables = line.split(" ");
+        String actionType = variables[0];
+
+        System.out.println(actionType);
         //badanie warunku zakończenia pracy
-        if((line == null) || "quit".equals(line)){
+        if("login".equals(actionType)){
+          QuickStart server = new QuickStart();
+          String userId = server.login(variables[1], variables[2]);
+          server.closeConnection();
+          out.writeBytes(userId+ "\n");
+          System.out.println(threadName + "| Wysłano linię: " + userId);
+        }
+        if("transfer".equals(actionType)){
+          QuickStart server = new QuickStart();
+          String info = server.transfer(variables[1], variables[2], new Integer(variables[3]));
+          server.closeConnection();
+          out.writeBytes(info+ "\n");
+          System.out.println(threadName + "| Wysłano linię: " + info);
+        }
+        else if ((line == null) || "quit".equals(line)){
           System.out.println(threadName + "| Zakończenie pracy z klientem: " + socket);
           socket.close();
           return;
-        }
-        else{ //odesłanie danych do klienta
-          out.writeBytes(line + "\n\r");
-          System.out.println(threadName + "| Wysłano linię: " + line);
         }
       }
       catch(IOException e){

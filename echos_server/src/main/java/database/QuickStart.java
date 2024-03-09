@@ -99,11 +99,11 @@ public class QuickStart {
     }
 
     //transfer z jednego konta na drugie
-    public void transfer(String fromAccount, String toAccount, int amount) {
+    public String transfer(String fromAccount, String toAccount, int amount) {
         collection = database.getCollection("clients");
 
         // Find the sender's document
-        Document senderDocument = collection.find(eq("bank_account", fromAccount)).first();
+        Document senderDocument = collection.find(eq("_id", fromAccount)).first();
 
         // Find the receiver's document
         Document receiverDocument = collection.find(eq("bank_account", toAccount)).first();
@@ -116,16 +116,16 @@ public class QuickStart {
             // Check if the sender has enough funds for the transfer
             if (senderBalance >= amount) {
                 // Deduct the amount from the sender and add it to the receiver
-                collection.updateOne(eq("bank_account", fromAccount), inc("balance", -amount));
+                collection.updateOne(eq("_id", fromAccount), inc("balance", -amount));
                 collection.updateOne(eq("bank_account", toAccount), inc("balance", amount));
 
-                System.out.println("Transfer successful. New balances - Sender: " + (senderBalance - amount) +
-                        ", Receiver: " + (receiverBalance + amount));
+                return "Transfer successful. New balances - Sender: " + (senderBalance - amount) +
+                        ", Receiver: " + (receiverBalance + amount) ;
             } else {
-                System.out.println("Insufficient funds. Transfer failed.");
+                return "Insufficient funds. Transfer failed.";
             }
         } else {
-            System.out.println("One or both of the accounts not found.");
+            return  "One or both of the accounts not found.";
         }
     }
 
@@ -141,7 +141,7 @@ public class QuickStart {
     }
 
     // pokaż balans konta
-    public void showAccountBalance(String account) {
+    public int showAccountBalance(String account) {
         collection = database.getCollection("clients");
 
         // Find the user's document
@@ -151,9 +151,10 @@ public class QuickStart {
             // Get the current balance of the user
             int currentBalance = userDocument.getInteger("balance", 0);
 
-            System.out.println("Account Balance for account " + account + ": " + currentBalance);
+            return currentBalance;
         } else {
             System.out.println("User with account " + account + " not found.");
+            return 0;
         }
     }
 
@@ -181,19 +182,19 @@ public class QuickStart {
         }
     }
 
+   
+
 
     // Close the MongoDB connection when the instance is no longer needed
     public void closeConnection() {
         mongoClient.close();
     }
 
-    public static void main(String args[]) {
-
-        QuickStart db = new QuickStart();
-
-
-        db.login("adam@nowak.com", "Nowak");
-
-    }
+//    public static void main(String args[]) {
+//
+//        QuickStart db = new QuickStart();
+//        db.login("adam@nowak.com", "Nowak");
+//        db.closeConnection();
+//    }
 
     }
