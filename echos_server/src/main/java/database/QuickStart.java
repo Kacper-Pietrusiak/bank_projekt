@@ -54,7 +54,7 @@ public class QuickStart {
         }
     }
 
-    // wpłata na konto
+    // wpłata na konto !!!Przerobic żeby zwracało stringa
     public void payment(String account, int amount) {
         collection = database.getCollection("clients");
         Document userDocument = collection.find(eq("bank_account", account)).first();
@@ -75,7 +75,7 @@ public class QuickStart {
         }
     }
 
-    // wypłata z konta
+    // wypłata z konta !!!Przerobic żeby zwracało stringa
     public void paycheck(String account, int amount) {
         collection = database.getCollection("clients");
         Document userDocument = collection.find(eq("bank_account", account)).first();
@@ -140,7 +140,7 @@ public class QuickStart {
         }
     }
 
-    // pokaż balans konta
+    // pokaż balans konta !!!Przerobic żeby zwracało stringa
     public int showAccountBalance(String account) {
         collection = database.getCollection("clients");
 

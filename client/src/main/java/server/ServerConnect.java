@@ -40,6 +40,8 @@ public class ServerConnect {
 
                 return "transfer " + id + " " + account + " " + amount;
             }
+
+            // !!!!dokonczyć case'y
             case "2": return  "balance";
             case "3": return  "paycheck";
             case "4": return  "payment";

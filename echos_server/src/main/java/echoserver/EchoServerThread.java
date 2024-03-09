@@ -67,6 +67,13 @@ public class EchoServerThread implements Runnable
           out.writeBytes(info+ "\n");
           System.out.println(threadName + "| Wysłano linię: " + info);
         }
+
+        //balance
+
+        //payment
+
+        //paycheck
+
         else if ((line == null) || "quit".equals(line)){
           System.out.println(threadName + "| Zakończenie pracy z klientem: " + socket);
           socket.close();
