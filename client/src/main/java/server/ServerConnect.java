@@ -17,17 +17,27 @@ import java.util.Scanner;
 public class ServerConnect {
     static String email;
     static String password;
+
+    public void setEmail(String l){
+        this.email=l;
+    }
+    public void setPassword(String p){
+        this.password=p;
+    }
+
     public static void main(String[] args) {
 
     }
 
 
     public static String login(){
+        /*
         Scanner scan = new Scanner(System.in);
         System.out.println("Podaj email: ");
         email = scan.nextLine();
         System.out.println("Podaj hasło: ");
         password = scan.nextLine();
+        */
 
         return "login " + email + " " + password;
     }
