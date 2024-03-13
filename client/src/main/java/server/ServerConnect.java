@@ -1,5 +1,8 @@
 package server;
 
+import banker.BankerActions;
+import client.ClientActions;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -7,6 +10,8 @@ import java.io.InputStreamReader;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class ServerConnect {
@@ -16,39 +21,6 @@ public class ServerConnect {
 
     }
 
-    public String actions(String id) {
-        Scanner scan = new Scanner(System.in);
-
-        System.out.println("Wpisz numer operacji którą chcesz wykonać: ");
-        System.out.println("1) Przlew na inne konto ");
-        System.out.println("2) Sprawdź stan konta ");
-        System.out.println("3) Wypłać środki ");
-        System.out.println("4) Wpłać środki ");
-
-        String action = scan.nextLine();
-
-        switch (action) {
-            case "1" : {
-                System.out.println("Na jakie konto chcesz przelac środki?");
-                String account = scan.nextLine();
-                System.out.println("ile chcesz przesłać?");
-                String amount = scan.nextLine();
-
-                if(new Integer(amount) < 0){
-                    return "Błąd złe dane";
-                }
-
-                return "transfer " + id + " " + account + " " + amount;
-            }
-
-            // !!!!dokonczyć case'y
-            case "2": return  "balance";
-            case "3": return  "paycheck";
-            case "4": return  "payment";
-            default : return "quit";
-        }
-
-    }
 
     public static String login(){
         Scanner scan = new Scanner(System.in);
@@ -64,7 +36,7 @@ public class ServerConnect {
         String host = "localhost";
         int port = 0;
         try {
-            port = new Integer("6666").intValue();
+            port = Integer.parseInt("6666");
         } catch (NumberFormatException e) {
             System.out.println("Nieprawidłowy argument: port");
             System.exit(-1);
@@ -88,9 +60,13 @@ public class ServerConnect {
         //Deklaracje zmiennych strumieniowych
         String line = null;
         String id = null;
+        String name = null;
+        String role = null;
         BufferedReader brSockInp = null;
         BufferedReader brLocalInp = null;
         DataOutputStream out = null;
+        ClientActions clientActions = new ClientActions();
+        BankerActions bankerActions = new BankerActions();
 
         //Utworzenie strumieni
         try {
@@ -112,8 +88,13 @@ public class ServerConnect {
             out.writeBytes(log + '\n');
             out.flush();
 
-            id = brSockInp.readLine();
-            System.out.println("Otrzymano: " + id );
+            String res = brSockInp.readLine();
+            String[] loginArgs = res.split(" ");
+            id = loginArgs[0];
+            role = loginArgs[1];
+            name =  Arrays.toString(Arrays.copyOfRange(loginArgs, 2, loginArgs.length));
+
+            System.out.println("Hello, " + name );
 
         }  catch (IOException e) {
             System.out.println("Błąd wejścia-wyjścia: " + e);
@@ -126,7 +107,20 @@ public class ServerConnect {
 
         while (true) {
             try {
-                line = actions(id);
+                if(Objects.equals(role, "banker")){
+                    line = bankerActions.actions();
+
+                    while(Objects.equals(line, "reset")){
+                        line = bankerActions.actions();
+                    }
+                }
+                else{
+                    line = clientActions.actions(id);
+
+                    while(Objects.equals(line, "reset")){
+                        line = clientActions.actions(id);
+                    }
+                }
 
 
                 if (line != null) {
@@ -134,7 +128,7 @@ public class ServerConnect {
                     out.writeBytes(line + '\n');
                     out.flush();
                 }
-                if (line == null || "quit".equals(line)) {
+                if (line == null || "exit".equals(line)) {
                     System.out.println("Kończenie pracy...");
                     clientSocket.close();
                     System.exit(0);

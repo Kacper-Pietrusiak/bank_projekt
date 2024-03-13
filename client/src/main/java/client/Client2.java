@@ -10,9 +10,10 @@ import java.util.Scanner;
  * @author dzelazny
  */
 
-public class Client  {
+public class Client2  {
     public static void main(String args[]) throws IOException {
         ServerConnect server = new ServerConnect();
         server.serverConnect();
     }
 }
+

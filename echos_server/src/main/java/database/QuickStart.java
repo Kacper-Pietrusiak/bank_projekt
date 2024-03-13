@@ -1,4 +1,5 @@
 package database;
+import java.util.Random;
 import java.util.UUID;
 
 import com.mongodb.client.MongoClient;
@@ -24,13 +25,23 @@ public class QuickStart {
         mongoClient = MongoClients.create(uri);
         database = mongoClient.getDatabase("bank");
     }
+    public static String generateAccountNumber() {
+        Random random = new Random();
+        // Używamy nextLong, aby uniknąć problemu zbyt dużych liczb dla int
+        long result = Math.abs(random.nextLong() % 10000000000L);
+
+        // Dodaj zero z przodu, jeśli liczba ma mniej niż 10 cyfr
+        String resultString = String.format("%010d", result);
+
+        return resultString;
+    }
 
     // tworzenie użytkownika
-    public void createUser(String name, String password, String email, String pesel) {
+    public String createUser(String name, String password, String email, String pesel) {
         // Create a new Document representing the user
         collection = database.getCollection("clients");
 
-        String bankAccount = UUID.randomUUID().toString();
+        String bankAccount = generateAccountNumber();
         String id = UUID.randomUUID().toString();
 
         Validators val = new Validators();
@@ -44,20 +55,41 @@ public class QuickStart {
                     .append("password", password)
                     .append("pesel", pesel)
                     .append("balance", 0)
-                    .append("bank_account", bankAccount);
+                    .append("bank_account", bankAccount)
+                    .append("isBanker", false)
+                    .append("isBlocked", false);
 
             // Insert the new user document into the collection
             collection.insertOne(newUser);
-            System.out.println("User created successfully!");
+            return "User created successfully!";
         } else {
-            System.out.println("Email or PESEL is not unique. Please choose a different one. Try again.");
+            return "Email or PESEL is not unique. Please choose a different one. Try again.";
+        }
+    }
+
+    //edycja danych klienta
+    public String updateClient(String id, String name, String email) {
+        collection = database.getCollection("clients");
+        Document userDocument = collection.find(eq("_id", id)).first();
+
+        if (userDocument != null) {
+            Document updateFields = new Document();
+            updateFields.append("name", name);
+            updateFields.append("email", email);
+
+            Document updateDocument = new Document("$set", updateFields);
+            collection.updateOne(eq("_id", id), updateDocument);
+
+            return "Update successful. New name: " + name + ", new email: " + email;
+        } else {
+            return "User with ID " + id + " not found.";
         }
     }
 
     // wpłata na konto !!!Przerobic żeby zwracało stringa
-    public void payment(String account, int amount) {
+    public String payment(String id, int amount) {
         collection = database.getCollection("clients");
-        Document userDocument = collection.find(eq("bank_account", account)).first();
+        Document userDocument = collection.find(eq("_id", id)).first();
 
         if (userDocument != null) {
             // Pobierz bieżący stan konta użytkownika
@@ -67,18 +99,18 @@ public class QuickStart {
             int newBalance = currentBalance + amount;
 
             // Zaktualizuj dokument w kolekcji z nowym saldem
-            collection.updateOne(eq("bank_account", account), inc("balance", newBalance));
+            collection.updateOne(eq("_id", id), inc("balance", +amount));
 
-            System.out.println("Payment successful. New balance: " + newBalance);
+            return "Payment successful. New balance: " + (currentBalance+amount);
         } else {
-            System.out.println("User with account " + account + " not found.");
+            return "User with account " + id + " not found.";
         }
     }
 
     // wypłata z konta !!!Przerobic żeby zwracało stringa
-    public void paycheck(String account, int amount) {
+    public String paycheck(String id, int amount) {
         collection = database.getCollection("clients");
-        Document userDocument = collection.find(eq("bank_account", account)).first();
+        Document userDocument = collection.find(eq("_id", id)).first();
 
         if (userDocument != null) {
             // Pobierz bieżący stan konta użytkownika
@@ -87,14 +119,14 @@ public class QuickStart {
             // Sprawdź czy użytkownik ma wystarczająco środków
             if (currentBalance >= amount) {
                 // Odejmij kwotę od salda i zaktualizuj dokument w kolekcji
-                collection.updateOne(eq("bank_account", account), inc("balance", -amount));
+                collection.updateOne(eq("_id", id), inc("balance", -amount));
 
-                System.out.println("Paycheck successful. New balance: " + (currentBalance - amount));
+                return "Paycheck successful. New balance: " + (currentBalance - amount);
             } else {
-                System.out.println("Insufficient funds. Paycheck failed.");
+                return "Insufficient funds. Paycheck failed.";
             }
         } else {
-            System.out.println("User with account " + account + " not found.");
+            return "User with account " + id + " not found.";
         }
     }
 
@@ -129,35 +161,43 @@ public class QuickStart {
         }
     }
 
-    // wyszukanie użytkownika po id
-    public void findUserById(String id) {
-        collection = database.getCollection("clients");
-        Document doc = collection.find(eq("_id", id)).first();
-        if (doc != null) {
-            System.out.println(doc.toJson());
-        } else {
-            System.out.println("No matching documents found.");
-        }
-    }
 
-    // pokaż balans konta !!!Przerobic żeby zwracało stringa
-    public int showAccountBalance(String account) {
+    // pokaż balans konta
+    public String showAccountBalance(String id) {
         collection = database.getCollection("clients");
 
         // Find the user's document
-        Document userDocument = collection.find(eq("bank_account", account)).first();
+        Document userDocument = collection.find(eq("_id", id)).first();
 
         if (userDocument != null) {
             // Get the current balance of the user
             int currentBalance = userDocument.getInteger("balance", 0);
 
-            return currentBalance;
+            return "Your balance is: " + currentBalance;
+
         } else {
-            System.out.println("User with account " + account + " not found.");
-            return 0;
+
+            return "User with account " + id + " not found.";
         }
     }
 
+    // wyszukanie użytkownika po id
+    public String findUserById(String id) {
+        collection = database.getCollection("clients");
+        Document doc = collection.find(eq("_id", id)).first();
+        if (doc != null) {
+            return "name: " + doc.get("name")+ " " + "email: " + doc.get("email")+ " " + "pesel: " + doc.get("pesel");
+        } else {
+            return "No matching documents found." ;
+        }
+    }
+
+    public String checkRole(boolean isBanker){
+        if(isBanker){
+            return "banker";
+        }
+        return "user";
+    }
 
     // logowanie
     public String login(String email, String password) {
@@ -167,11 +207,16 @@ public class QuickStart {
         Document userDocument = collection.find(and(eq("email", email), eq("password", password))).first();
 
         if (userDocument != null) {
+
+
             String userId = userDocument.getString("_id");
+            String userName = userDocument.getString("name");
+            String role = checkRole(userDocument.getBoolean("isBanker"));
+
 
             if (userId != null) {
                 System.out.println("Login successful! User ID: " + userId);
-                return userId;
+                return userId + " " + role + " " + userName;
             } else {
                 System.out.println("Error retrieving user ID. Login failed.");
                 return null;
@@ -182,7 +227,7 @@ public class QuickStart {
         }
     }
 
-   
+
 
 
     // Close the MongoDB connection when the instance is no longer needed
@@ -190,11 +235,15 @@ public class QuickStart {
         mongoClient.close();
     }
 
+
+
 //    public static void main(String args[]) {
 //
 //        QuickStart db = new QuickStart();
-//        db.login("adam@nowak.com", "Nowak");
+//        db.createUser("Marcin Lewandowski", "Lewandowski", "marcin@lewandowski.com", "20202021234");
+//        db.createUser("Janusz Kowalski", "Kowalski", "janusz@kowalski.com", "20204321232");
+//        db.createUser("Adam Nowak", "Nowak", "adam@nowak.com", "23304321232");
 //        db.closeConnection();
 //    }
 
-    }
+}

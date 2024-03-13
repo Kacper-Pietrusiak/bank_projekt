@@ -55,10 +55,10 @@ public class EchoServerThread implements Runnable
         //badanie warunku zakończenia pracy
         if("login".equals(actionType)){
           QuickStart server = new QuickStart();
-          String userId = server.login(variables[1], variables[2]);
+          String loggedUser = server.login(variables[1], variables[2]);
           server.closeConnection();
-          out.writeBytes(userId+ "\n");
-          System.out.println(threadName + "| Wysłano linię: " + userId);
+          out.writeBytes(loggedUser+ "\n");
+          System.out.println(threadName + "| Wysłano linię: " + loggedUser);
         }
         if("transfer".equals(actionType)){
           QuickStart server = new QuickStart();
@@ -68,11 +68,52 @@ public class EchoServerThread implements Runnable
           System.out.println(threadName + "| Wysłano linię: " + info);
         }
 
-        //balance
+        if("showAccountBalance".equals(actionType)){
+          QuickStart server = new QuickStart();
+          String info = server.showAccountBalance(variables[1]);
+          server.closeConnection();
+          out.writeBytes(info+ "\n");
+          System.out.println(threadName + "| Wysłano linię: " + info);
+        }
 
-        //payment
+        if("paycheck".equals(actionType)){
+          QuickStart server = new QuickStart();
+          String info = server.paycheck(variables[1], new Integer(variables[2]));
+          server.closeConnection();
+          out.writeBytes(info+ "\n");
+          System.out.println(threadName + "| Wysłano linię: " + info);
+        }
 
-        //paycheck
+        if("payment".equals(actionType)){
+          QuickStart server = new QuickStart();
+          String info = server.payment(variables[1], new Integer(variables[2]));
+          server.closeConnection();
+          out.writeBytes(info+ "\n");
+          System.out.println(threadName + "| Wysłano linię: " + info);
+        }
+
+        if("updateClient".equals(actionType)){
+          QuickStart server = new QuickStart();
+          String info = server.updateClient(variables[1], variables[2], variables[3]);
+          server.closeConnection();
+          out.writeBytes(info+ "\n");
+          System.out.println(threadName + "| Wysłano linię: " + info);
+        }
+        if("createClient".equals(actionType)){
+          String name = variables[1] + " " + variables[2];
+          QuickStart server = new QuickStart();
+          String info = server.createUser(name, variables[3], variables[4], variables[5]);
+          server.closeConnection();
+          out.writeBytes(info+ "\n");
+          System.out.println(threadName + "| Wysłano linię: " + info);
+        }
+        if("showClient".equals(actionType)){
+          QuickStart server = new QuickStart();
+          String info = server.findUserById(variables[1]);
+          server.closeConnection();
+          out.writeBytes(info+ "\n");
+          System.out.println(threadName + "| Wysłano linię: " + info);
+        }
 
         else if ((line == null) || "quit".equals(line)){
           System.out.println(threadName + "| Zakończenie pracy z klientem: " + socket);
