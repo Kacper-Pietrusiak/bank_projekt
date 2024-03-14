@@ -28,6 +28,7 @@ public class BankGUI extends JFrame {
                 try {
                     server.setEmail(log);
                     server.setPassword(pas);
+                    setVisible(false);
                     server.serverConnect();
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);

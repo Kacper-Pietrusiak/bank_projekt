@@ -68,19 +68,28 @@ public class QuickStart {
     }
 
     //edycja danych klienta
-    public String updateClient(String id, String name, String email) {
+    public String updateClient(String id, String email, String name) {
         collection = database.getCollection("clients");
         Document userDocument = collection.find(eq("_id", id)).first();
 
         if (userDocument != null) {
+
+
             Document updateFields = new Document();
-            updateFields.append("name", name);
-            updateFields.append("email", email);
+            if(!"null".equals(email)){
+                updateFields.append("email", email);
+            }
+            if(!"null".equals(name)){
+                updateFields.append("name", name);
+            }
+
+
+
 
             Document updateDocument = new Document("$set", updateFields);
             collection.updateOne(eq("_id", id), updateDocument);
 
-            return "Update successful. New name: " + name + ", new email: " + email;
+            return "Update successful.";
         } else {
             return "User with ID " + id + " not found.";
         }

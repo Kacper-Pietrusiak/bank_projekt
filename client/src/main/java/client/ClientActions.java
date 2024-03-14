@@ -8,7 +8,7 @@ public class ClientActions {
         Scanner scan = new Scanner(System.in);
 
         System.out.println("Wpisz numer operacji którą chcesz wykonać: ");
-        System.out.println("1) Przlew na inne konto ");
+        System.out.println("1) Przelew na inne konto ");
         System.out.println("2) Sprawdź stan konta ");
         System.out.println("3) Wypłać środki ");
         System.out.println("4) Wpłać środki ");
@@ -24,8 +24,9 @@ public class ClientActions {
                 System.out.println("ile chcesz przesłać?");
                 String amount = scan.nextLine();
 
-                if( Integer.parseInt(amount) < 0){
-                    return "Błąd złe dane";
+                if( Integer.parseInt(amount) <= 0){
+                    System.out.println("Niepoprawna kwota");
+                    return "reset";
                 }
 
                 return "transfer " + id + " " + account + " " + amount;
@@ -39,6 +40,10 @@ public class ClientActions {
 
                 try {
                     int amount = Integer.parseInt(amountString);
+                    if(amount <= 0){
+                        System.out.println("Niepoprawna kwota");
+                        return "reset";
+                    }
                     return "paycheck " + id + " " + amount;
                 } catch (NumberFormatException e) {
                     System.out.println("Niepoprawne dane");
@@ -51,6 +56,10 @@ public class ClientActions {
 
                 try {
                     int amount = Integer.parseInt(amountString);
+                    if(amount <= 0){
+                        System.out.println("Niepoprawna kwota");
+                        return "reset";
+                    }
                     return "payment " + id + " " + amount;
                 } catch (NumberFormatException e) {
                     System.out.println("Niepoprawne dane");

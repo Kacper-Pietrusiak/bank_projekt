@@ -99,10 +99,20 @@ public class ServerConnect {
             out.flush();
 
             String res = brSockInp.readLine();
+
+            if(Objects.equals(res, "null")){
+                System.out.println("Niepoprawny email lub hasło. Kończenie pracy...");
+                clientSocket.close();
+                System.exit(0);
+            }
+
             String[] loginArgs = res.split(" ");
             id = loginArgs[0];
             role = loginArgs[1];
-            name =  Arrays.toString(Arrays.copyOfRange(loginArgs, 2, loginArgs.length));
+            name =  loginArgs[2] + " " + loginArgs[3];
+
+
+
 
             System.out.println("Hello, " + name );
 

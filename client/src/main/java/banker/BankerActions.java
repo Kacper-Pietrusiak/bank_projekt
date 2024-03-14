@@ -1,5 +1,6 @@
 package banker;
 
+import java.util.Objects;
 import java.util.Scanner;
 
 public class BankerActions {
@@ -24,7 +25,18 @@ public class BankerActions {
                 System.out.println("Podaj nowy email");
                 String email = scan.nextLine();
 
-                return "updateClient " + clientId + " " + name + " " + email;
+
+
+                if(name == ""){
+                    name = "null";
+                }
+                if(Objects.equals(email, " ")){
+                    email = "null";
+                }
+
+
+
+                return "updateClient " + clientId + " " + email + " " + name;
             }
             case "2": {
                 System.out.println("Podaj imie i nazwisko");
@@ -35,6 +47,7 @@ public class BankerActions {
                 String email = scan.nextLine();
                 System.out.println("Podaj pesel");
                 String pesel = scan.nextLine();
+
 
 
                 return "createClient " + name + " " + pass + " " + email + " " + pesel;
